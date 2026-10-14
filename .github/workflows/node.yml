@@ -34,11 +34,14 @@ jobs:
           REPO_PARENT: ${{ github.event.repository.parent.owner.login }}
         run: python engine.py
 
-      # LƯU TRẠNG THÁI BẰNG FAST-FORWARD CHỐNG XUNG ĐỘT TUYỆT ĐỐI
+      # LƯU TRẠNG THÁI BẰNG FAST-FORWARD CHỐNG XUNG ĐỘT (CÓ XÁC THỰC TOKEN)
       - name: Lưu vết tích tiến hóa và snapshot linh hồn
         run: |
           git config --global user.name "Seed-01-Worker-Bot"
           git config --global user.email "bot@seed01.node"
+          
+          # CẤP CHÌA KHÓA BẢO MẬT ĐỂ ĐƯỢC PHÉP PUSH
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           
           git fetch origin main
           git reset origin/main
