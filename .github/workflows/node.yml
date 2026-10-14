@@ -1,0 +1,47 @@
+name: Seed Invariant Lifecycle
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */4 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  run-seed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kéo mã nguồn Hạt Mầm
+        uses: actions/checkout@v4
+
+      - name: Thiết lập Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.10'
+
+      # VẬN HÀNH HẠT MẦM: ĐA XÚC TU + 1+N SIÊU XOR + DẠY TOÀN BỘ BẦY TIẾN HÓA
+      - name: Vận hành Hạt Nhân Seed
+        env:
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_PARENT: ${{ github.event.repository.parent.owner.login }}
+        run: python engine.py
+
+      # LƯU TRẠNG THÁI VÀO GIT BẰNG FAST-FORWARD CHỐNG XUNG ĐỘT
+      - name: Lưu vết tích tiến hóa phân tán
+        run: |
+          git config --global user.name "Seed-Genomic-Bot"
+          git config --global user.email "bot@seed.node"
+          
+          git fetch origin main
+          git reset origin/main
+          git add synapses/ synapse_backward.json synapse_forward.json 2>/dev/null || true
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "🌱 [Hạt Mầm] Tiến hóa đa xúc tu 1+N Siêu XOR & Đồng bộ P2P [skip ci]"
+            git push origin main
+          else
+            echo "Không có biến đổi mới."
+          fi
